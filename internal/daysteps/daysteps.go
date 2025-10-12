@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Yandex-Practicum/tracker/internal/spentcalories"
@@ -27,9 +26,9 @@ func parsePackage(data string) (int, time.Duration, error) {
 	var durReturning time.Duration
 	var errReturning error
 	//Проверка, что введенные пользователем данные не пусты, и потенциально могут содержать 2 элемента
-	dataParts, err := DataParts(data, 3, 2)
+	dataParts, err := spentcalories.DataParts(data, 3, 2)
 	if err != nil {
-		errReturning = fmt.Errorf("ошибка входящих данных '%v': %v\n", dataParts, err)
+		errReturning = fmt.Errorf("ошибка входящих данных '%v': %v", dataParts, err)
 	}
 
 	incomeDataSteps := []rune(dataParts[0])
@@ -44,7 +43,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 
 	steps, err := strconv.Atoi(buffer)
 	if err != nil {
-		errReturning = fmt.Errorf("ошибочный ввод количества шагов '%s': %v\n", buffer, err)
+		errReturning = fmt.Errorf("ошибочный ввод количества шагов '%s': %v", buffer, err)
 		return 0, 0, errReturning
 	}
 
@@ -60,32 +59,12 @@ func parsePackage(data string) (int, time.Duration, error) {
 
 	duration, err := time.ParseDuration(buffer)
 	if err != nil {
-		errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v\n", buffer, err)
+		errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v", buffer, err)
 		return 0, 0, errReturning
 	}
 	durReturning = duration
 
 	return steps, durReturning, errReturning
-}
-
-func DataParts(data string, minLength, numberParts int) ([]string, error) {
-	var errReturning error
-	if len(data) < minLength {
-		return []string{}, ErrIncomingData
-	}
-
-	dataParts := strings.Split(data, ",")
-
-	if len(dataParts) != numberParts {
-		return []string{}, ErrIncomingData
-	}
-	for _, i := range dataParts {
-		if len(i) == 0 {
-			return []string{}, ErrIncomingData
-		}
-	}
-
-	return dataParts, errReturning
 }
 
 func DayActionInfo(data string, weight, height float64) string {
@@ -104,7 +83,7 @@ func DayActionInfo(data string, weight, height float64) string {
 		fmt.Println(err)
 		return ""
 	}
-	strReturning := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2fкм.\nВы сожгли %.2fккал.", steps, distance, calorics)
+	strReturning := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2fкм.\nВы сожгли %.2fккал.\n", steps, distance, calorics)
 
 	return strReturning
 }
