@@ -29,7 +29,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 	//Проверка, что введенные пользователем данные не пусты, и потенциально могут содержать 2 элемента
 	dataParts, err := DataParts(data, 3, 2)
 	if err != nil {
-		errReturning = fmt.Errorf("Ошибка входящих данных '%v': %v\n", dataParts, err)
+		errReturning = fmt.Errorf("ошибка входящих данных '%v': %v\n", dataParts, err)
 	}
 
 	incomeDataSteps := []rune(dataParts[0])
@@ -44,7 +44,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 
 	steps, err := strconv.Atoi(buffer)
 	if err != nil {
-		errReturning = fmt.Errorf("Ошибочный ввод количества шагов '%s': %v\n", buffer, err)
+		errReturning = fmt.Errorf("ошибочный ввод количества шагов '%s': %v\n", buffer, err)
 		return 0, 0, errReturning
 	}
 
@@ -60,7 +60,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 
 	duration, err := time.ParseDuration(buffer)
 	if err != nil {
-		errReturning = fmt.Errorf("Ошибка парсинга продолжительности '%s': %v\n", buffer, err)
+		errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v\n", buffer, err)
 		return 0, 0, errReturning
 	}
 	durReturning = duration

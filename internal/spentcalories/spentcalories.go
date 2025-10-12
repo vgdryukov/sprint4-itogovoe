@@ -3,6 +3,7 @@ package spentcalories
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -33,7 +34,7 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 
 	dataParts, err := daysteps.DataParts(data, 10, 3)
 	if err != nil {
-		errReturning = fmt.Errorf("Ошибка ввода данных '%v': %v\n", dataParts, err)
+		errReturning = fmt.Errorf("ошибка ввода данных '%v': %v\n", dataParts, err)
 	}
 
 	for i := 0; i < 3; i++ {
@@ -50,7 +51,7 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 		case 0:
 			num, err := strconv.Atoi(buffer)
 			if err != nil {
-				errReturning = fmt.Errorf("Ошибочный ввод количества шагов '%s': %v\n", buffer, err)
+				errReturning = fmt.Errorf("ошибочный ввод количества шагов '%s': %v\n", buffer, err)
 				break
 			}
 			steps = num
@@ -59,7 +60,7 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 		case 2:
 			duration, err := time.ParseDuration(buffer)
 			if err != nil {
-				errReturning = fmt.Errorf("Ошибка парсинга продолжительности '%s': %v\n", buffer, err)
+				errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v\n", buffer, err)
 				break
 			}
 			durReturning = duration
@@ -90,8 +91,8 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 
 	steps, activity, duration, err := parseTraining(data)
 	if err != nil {
-		errReturning = fmt.Errorf("Не получилось получить информацию о тренировке: %v", err)
-		//		log.Printf("не получилось получить информацию о тренировке: %v", err)
+		errReturning = fmt.Errorf("не получилось получить информацию о тренировке: %v", err)
+		log.Printf("не получилось получить информацию о тренировке: %v", err)
 	}
 
 	switch activity {
