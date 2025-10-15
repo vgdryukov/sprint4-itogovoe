@@ -31,6 +31,7 @@ func main() {
 	)
 
 	for _, v := range input {
+		//fmt.Println("---func main--- daysteps.DayActionInfo (v, weight, height):", v, weight, height)
 		dayActionsInfo = daysteps.DayActionInfo(v, weight, height)
 		dayActionsLog = append(dayActionsLog, dayActionsInfo)
 	}
@@ -53,6 +54,7 @@ func main() {
 	var trainingLog []string
 
 	for _, v := range trainings {
+		//fmt.Println("---func main--- spentcalories.TrainingInfo (v, weight, height): ", v, weight, height)
 		trainingInfo, err := spentcalories.TrainingInfo(v, weight, height)
 		if err != nil {
 			log.Printf("не получилось получить информацию о тренировке: %v", err)

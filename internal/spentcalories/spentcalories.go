@@ -28,34 +28,39 @@ var (
 )
 
 func DataParts(data string, minLength, numberParts int) ([]string, error) {
+	//fmt.Println("------------func DataParts (data, minLength, numberParts): ", data, minLength, numberParts)
 	if len(data) < minLength {
 		return []string{}, ErrIncomingData
 	}
 
 	dataParts := strings.Split(data, ",")
-
+	//fmt.Println("------------func DataParts slise dataParts, len(dataParts): ", dataParts, len(dataParts))
 	if len(dataParts) != numberParts {
+		//fmt.Println("---------------func DataParts RETURN-0: ", []string{}, ErrIncomingDataParts)
 		return []string{}, ErrIncomingDataParts
 	}
 	if len(dataParts[0]) == 0 {
+		//fmt.Println("---------------func DataParts RETURN-1: ", []string{}, ErrIncomingDataParts)
 		return []string{}, ErrIncomingDataSteps
 	}
 	if len(dataParts[1]) == 0 {
+		//fmt.Println("---------------func DataParts RETURN-2: ", []string{}, ErrIncomingDataParts)
 		return []string{}, ErrIncomingDataDur
 	}
-
+	//fmt.Println("---------------func DataParts RETURN-NORM: ", dataParts, nil)
 	return dataParts, nil
 }
 
 func parseTraining(data string) (int, string, time.Duration, error) {
 	// TODO: реализовать функцию
+	//fmt.Println("---------func parseTraining(data): ", data)
 	var steps int = 0
 	var errReturning error = nil
-	var buffer string = ""
 	var activity string = ""
 	var durReturning time.Duration = 0
 
 	dataParts, err := DataParts(data, 10, 3)
+	//fmt.Println("---------func parseTraining slice dataParts: ", dataParts)
 	if err != nil {
 		errReturning = fmt.Errorf("ошибка входящих данных '%v': %v", dataParts, err)
 		return steps, activity, durReturning, errReturning
@@ -63,7 +68,7 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 
 	for i := 0; i < 3; i++ {
 		incomeData := []rune(dataParts[i])
-
+		var buffer string = ""
 		for k := 0; k < len(incomeData); k++ {
 			if string(incomeData[k]) != " " {
 				buffer += string(incomeData[k])
@@ -82,7 +87,9 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 		case 1:
 			activity = buffer
 		case 2:
+			//fmt.Println("------------func parseTraining duration buffer: ", buffer)
 			duration, err := time.ParseDuration(buffer)
+			//fmt.Println("---------------func parseTraining duration: ", duration)
 			if err != nil {
 				errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v", buffer, err)
 				return 0, "", 0, errReturning
@@ -101,6 +108,7 @@ func distance(steps int, height float64) float64 {
 
 func meanSpeed(steps int, height float64, duration time.Duration) float64 {
 	// TODO: реализовать функцию
+	//fmt.Println("------------func meanSpeed (steps, height, duration):", steps, height, duration)
 	if duration <= 0 {
 		return 0
 	}
@@ -110,6 +118,7 @@ func meanSpeed(steps int, height float64, duration time.Duration) float64 {
 
 func TrainingInfo(data string, weight, height float64) (string, error) {
 	// TODO: реализовать функцию
+	//fmt.Println("------func TrainingInfo (data, weight, height): ", data, weight, height)
 	var errReturning error
 	var calorics float64
 
@@ -157,6 +166,7 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 
 func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
 	// TODO: реализовать функцию
+	//fmt.Println("------------func RunningSpentCalories (steps, weight, height, duration): ", steps, weight, height, duration)
 	if steps < 1 || weight < 10 || height < 1 || duration.Minutes() < 1 {
 		return 0, ErrIncomingData
 	}
@@ -167,6 +177,7 @@ func RunningSpentCalories(steps int, weight, height float64, duration time.Durat
 
 func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
 	// TODO: реализовать функцию
+	//fmt.Println("------------func WalkingSpentCalories (steps, weight, height, duration): ", steps, weight, height, duration)
 	if steps < 1 || weight < 10 || height < 1 || duration.Minutes() < 1 {
 		return 0, ErrIncomingData
 	}

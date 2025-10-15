@@ -22,6 +22,7 @@ var (
 
 func parsePackage(data string) (int, time.Duration, error) {
 	// TODO: реализовать функцию
+	//fmt.Println("---------func parsePackage (data): ", data)
 	var buffer string = ""
 	var durReturning time.Duration
 	var errReturning error
@@ -70,6 +71,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 
 func DayActionInfo(data string, weight, height float64) string {
 	// TODO: реализовать функцию
+	//fmt.Println("------func DayActionInfo (data, weight, height): ", data, weight, height)
 	steps, duration, err := parsePackage(data)
 	if err != nil {
 		return ""
