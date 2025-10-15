@@ -25,10 +25,11 @@ func parsePackage(data string) (int, time.Duration, error) {
 	var buffer string = ""
 	var durReturning time.Duration
 	var errReturning error
-	//Проверка, что введенные пользователем данные не пусты, и потенциально могут содержать 2 элемента
+
 	dataParts, err := spentcalories.DataParts(data, 3, 2)
 	if err != nil {
 		errReturning = fmt.Errorf("ошибка входящих данных '%v': %v", dataParts, err)
+		return 0, 0, errReturning
 	}
 
 	incomeDataSteps := []rune(dataParts[0])
@@ -47,11 +48,11 @@ func parsePackage(data string) (int, time.Duration, error) {
 		return 0, 0, errReturning
 	}
 
-	incomeDataTime := []rune(dataParts[1])
+	incomeDataDur := []rune(dataParts[1])
 	buffer = ""
-	for i := 0; i < len(incomeDataTime); i++ {
-		if string(incomeDataTime[i]) != " " {
-			buffer += string(incomeDataTime[i])
+	for i := 0; i < len(incomeDataDur); i++ {
+		if string(incomeDataDur[i]) != " " {
+			buffer += string(incomeDataDur[i])
 		} else {
 			i++
 		}
@@ -64,14 +65,13 @@ func parsePackage(data string) (int, time.Duration, error) {
 	}
 	durReturning = duration
 
-	return steps, durReturning, errReturning
+	return steps, durReturning, nil
 }
 
 func DayActionInfo(data string, weight, height float64) string {
 	// TODO: реализовать функцию
 	steps, duration, err := parsePackage(data)
 	if err != nil {
-		fmt.Println(err)
 		return ""
 	}
 	if steps <= 0 {
@@ -80,7 +80,6 @@ func DayActionInfo(data string, weight, height float64) string {
 	distance := (float64(steps) * stepLength) / mInKm
 	calorics, err := spentcalories.WalkingSpentCalories(steps, weight, height, duration)
 	if err != nil {
-		fmt.Println(err)
 		return ""
 	}
 	strReturning := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2fкм.\nВы сожгли %.2fккал.\n", steps, distance, calorics)

@@ -20,12 +20,14 @@ const (
 )
 
 var (
-	ErrIncomingData = errors.New("ошибка во входящих данных")
-	ErrCalcCalorics = errors.New("ошибка расчета каллорий")
+	ErrIncomingData      = errors.New("ошибка во входящей строке данных")
+	ErrIncomingDataParts = errors.New("ошибка в количестве частей входящей строки")
+	ErrIncomingDataSteps = errors.New("ошибка в количестве шагов")
+	ErrIncomingDataDur   = errors.New("ошибка в продолжительности")
+	ErrCalcCalorics      = errors.New("ошибка расчета каллорий")
 )
 
 func DataParts(data string, minLength, numberParts int) ([]string, error) {
-	var errReturning error
 	if len(data) < minLength {
 		return []string{}, ErrIncomingData
 	}
@@ -33,28 +35,30 @@ func DataParts(data string, minLength, numberParts int) ([]string, error) {
 	dataParts := strings.Split(data, ",")
 
 	if len(dataParts) != numberParts {
-		return []string{}, ErrIncomingData
+		return []string{}, ErrIncomingDataParts
 	}
-	for _, i := range dataParts {
-		if len(i) == 0 {
-			return []string{}, ErrIncomingData
-		}
+	if len(dataParts[0]) == 0 {
+		return []string{}, ErrIncomingDataSteps
+	}
+	if len(dataParts[1]) == 0 {
+		return []string{}, ErrIncomingDataDur
 	}
 
-	return dataParts, errReturning
+	return dataParts, nil
 }
 
 func parseTraining(data string) (int, string, time.Duration, error) {
 	// TODO: реализовать функцию
-	var steps int
-	var errReturning error
+	var steps int = 0
+	var errReturning error = nil
 	var buffer string = ""
 	var activity string = ""
 	var durReturning time.Duration = 0
 
 	dataParts, err := DataParts(data, 10, 3)
 	if err != nil {
-		errReturning = fmt.Errorf("ошибка ввода данных '%v': %v", dataParts, err)
+		errReturning = fmt.Errorf("ошибка входящих данных '%v': %v", dataParts, err)
+		return steps, activity, durReturning, errReturning
 	}
 
 	for i := 0; i < 3; i++ {
@@ -72,7 +76,7 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 			num, err := strconv.Atoi(buffer)
 			if err != nil {
 				errReturning = fmt.Errorf("ошибочный ввод количества шагов '%s': %v", buffer, err)
-				break
+				return steps, activity, durReturning, errReturning
 			}
 			steps = num
 		case 1:
@@ -81,12 +85,12 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 			duration, err := time.ParseDuration(buffer)
 			if err != nil {
 				errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v", buffer, err)
-				break
+				return 0, "", 0, errReturning
 			}
 			durReturning = duration
 		}
 	}
-	return steps, activity, durReturning, errReturning
+	return steps, activity, durReturning, nil
 }
 
 func distance(steps int, height float64) float64 {
@@ -111,7 +115,7 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 
 	steps, activity, duration, err := parseTraining(data)
 	if err != nil {
-		errReturning = fmt.Errorf("не получилось получить информацию о тренировке: %v", err)
+		errReturning = fmt.Errorf("не удалось получить информацию о тренировке: %v", err)
 
 		flog, err := os.OpenFile(`server.log`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -124,7 +128,9 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 		}
 		defer flog.Close()
 		mylog := log.New(flog, `serv `, log.LstdFlags|log.Lshortfile)
-		mylog.Printf("не получилось получить информацию о тренировке: %v\n", err)
+		mylog.Printf("не удалось получить информацию о тренировке: %v\n", err)
+
+		return "", errReturning
 	}
 
 	switch activity {
@@ -141,12 +147,12 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	default:
 		return "", errors.New("неизвестный тип тренировки")
 	}
-
+	durationInHours := duration.Hours()
 	distance := distance(steps, height)
 	speed := meanSpeed(steps, height, duration)
 
-	strReturning := fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2fч.\nДистанция: %.2fкм.\nСкорость: %.2fкм/ч\nСожгли калорий: %.2f\n", activity, duration, distance, speed, calorics)
-	return strReturning, errReturning
+	strReturning := fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2fч.\nДистанция: %.2fкм.\nСкорость: %.2fкм/ч\nСожгли калорий: %.2f\n", activity, durationInHours, distance, speed, calorics)
+	return strReturning, nil
 }
 
 func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
