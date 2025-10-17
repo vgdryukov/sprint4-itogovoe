@@ -27,6 +27,21 @@ var (
 	ErrCalcCalorics      = errors.New("ошибка расчета каллорий")
 )
 
+func Logger(fileName, textRecover, logIndex, textError string, errIncome error) {
+	flog, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(textRecover, r)
+			}
+		}()
+	}
+	defer flog.Close()
+	mylog := log.New(flog, logIndex, log.LstdFlags|log.Lshortfile)
+	mylog.Printf(textError, errIncome)
+}
+
 func DataParts(data string, minLength, numberParts int) ([]string, error) {
 	//fmt.Println("------------func DataParts (data, minLength, numberParts): ", data, minLength, numberParts)
 	if len(data) < minLength {
@@ -54,49 +69,41 @@ func DataParts(data string, minLength, numberParts int) ([]string, error) {
 func parseTraining(data string) (int, string, time.Duration, error) {
 	// TODO: реализовать функцию
 	//fmt.Println("---------func parseTraining(data): ", data)
-	var steps int = 0
-	var errReturning error = nil
-	var activity string = ""
+	var errReturning error
 	var durReturning time.Duration = 0
 
 	dataParts, err := DataParts(data, 10, 3)
 	//fmt.Println("---------func parseTraining slice dataParts: ", dataParts)
 	if err != nil {
 		errReturning = fmt.Errorf("ошибка входящих данных '%v': %v", dataParts, err)
-		return steps, activity, durReturning, errReturning
+		return 0, "", 0, errReturning
 	}
 
-	for i := 0; i < 3; i++ {
-		incomeData := []rune(dataParts[i])
-		var buffer string = ""
-		for k := 0; k < len(incomeData); k++ {
-			if string(incomeData[k]) != " " {
-				buffer += string(incomeData[k])
-			} else {
-				k++
-			}
-		}
-		switch i {
-		case 0:
-			num, err := strconv.Atoi(buffer)
-			if err != nil {
-				errReturning = fmt.Errorf("ошибочный ввод количества шагов '%s': %v", buffer, err)
-				return steps, activity, durReturning, errReturning
-			}
-			steps = num
-		case 1:
-			activity = buffer
-		case 2:
-			//fmt.Println("------------func parseTraining duration buffer: ", buffer)
-			duration, err := time.ParseDuration(buffer)
-			//fmt.Println("---------------func parseTraining duration: ", duration)
-			if err != nil {
-				errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v", buffer, err)
-				return 0, "", 0, errReturning
-			}
-			durReturning = duration
-		}
+	num, err := strconv.Atoi(dataParts[0])
+	if err != nil {
+		errReturning = fmt.Errorf("ошибочный ввод количества шагов '%s': %v", dataParts[0], err)
+		return 0, "", 0, errReturning
 	}
+	if num <= 0 {
+		errReturning = errors.New("некорректное количество шагов")
+		return 0, "", 0, errReturning
+	}
+	steps := num
+
+	activity := dataParts[1]
+
+	duration, err := time.ParseDuration(dataParts[2])
+	//fmt.Println("---------------func parseTraining duration: ", duration)
+	if err != nil {
+		errReturning = fmt.Errorf("ошибка парсинга продолжительности '%s': %v", dataParts[2], err)
+		return 0, "", 0, errReturning
+	}
+	if duration <= 0 {
+		errReturning = errors.New("некорректная продолжительность")
+		return 0, "", 0, errReturning
+	}
+	durReturning = duration
+
 	return steps, activity, durReturning, nil
 }
 
@@ -125,20 +132,7 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	steps, activity, duration, err := parseTraining(data)
 	if err != nil {
 		errReturning = fmt.Errorf("не удалось получить информацию о тренировке: %v", err)
-
-		flog, err := os.OpenFile(`server.log`, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatal(err)
-			defer func() {
-				if r := recover(); r != nil {
-					fmt.Println("Восстановление в TrainingInfo() после паники в логгере: ", r)
-				}
-			}()
-		}
-		defer flog.Close()
-		mylog := log.New(flog, `serv `, log.LstdFlags|log.Lshortfile)
-		mylog.Printf("не удалось получить информацию о тренировке: %v\n", err)
-
+		Logger(`training.log`, "Восстановление в TrainingInfo() после паники в логгере: ", `training `, "не удалось получить информацию о тренировке: %v\n", err)
 		return "", errReturning
 	}
 
@@ -160,7 +154,7 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	distance := distance(steps, height)
 	speed := meanSpeed(steps, height, duration)
 
-	strReturning := fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2fч.\nДистанция: %.2fкм.\nСкорость: %.2fкм/ч\nСожгли калорий: %.2f\n", activity, durationInHours, distance, speed, calorics)
+	strReturning := fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", activity, durationInHours, distance, speed, calorics)
 	return strReturning, nil
 }
 
