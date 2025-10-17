@@ -20,11 +20,12 @@ const (
 )
 
 var (
-	ErrIncomingData      = errors.New("ошибка во входящей строке данных")
-	ErrIncomingDataParts = errors.New("ошибка в количестве частей входящей строки")
-	ErrIncomingDataSteps = errors.New("ошибка в количестве шагов")
-	ErrIncomingDataDur   = errors.New("ошибка в продолжительности")
-	ErrCalcCalorics      = errors.New("ошибка расчета каллорий")
+	ErrIncomingData         = errors.New("ошибка во входящей строке данных")
+	ErrIncomingDataParts    = errors.New("ошибка в количестве частей входящей строки")
+	ErrIncomingDataSteps    = errors.New("ошибка во входящем количестве шагов")
+	ErrIncomingDataDur      = errors.New("ошибка во входящей продолжительности")
+	ErrIncomingDataActivity = errors.New("ошибка во входящем виде активности")
+	ErrCalcCalorics         = errors.New("ошибка расчета каллорий")
 )
 
 func Logger(fileName, textRecover, logIndex, textError string, errIncome error) {
@@ -58,8 +59,14 @@ func DataParts(data string, minLength, numberParts int) ([]string, error) {
 		//fmt.Println("---------------func DataParts RETURN-1: ", []string{}, ErrIncomingDataParts)
 		return []string{}, ErrIncomingDataSteps
 	}
-	if len(dataParts[1]) == 0 {
+	if numberParts == 2 && len(dataParts[1]) == 0 {
 		//fmt.Println("---------------func DataParts RETURN-2: ", []string{}, ErrIncomingDataParts)
+		return []string{}, ErrIncomingDataDur
+	}
+	if numberParts == 3 && len(dataParts[1]) == 0 {
+		return []string{}, ErrIncomingDataActivity
+	}
+	if numberParts == 3 && len(dataParts[2]) == 0 {
 		return []string{}, ErrIncomingDataDur
 	}
 	//fmt.Println("---------------func DataParts RETURN-NORM: ", dataParts, nil)
