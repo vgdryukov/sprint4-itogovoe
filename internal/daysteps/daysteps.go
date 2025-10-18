@@ -23,7 +23,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 
 	dataParts, err := spentcalories.DataParts(data, 3, 2)
 	if err != nil {
-		errReturning = fmt.Errorf("некорректная строка входящих данных '%v': %v", dataParts, err)
+		errReturning = fmt.Errorf("некорректная строка входящих данных ('%s') '%v': %v", data, dataParts, err)
 		return 0, 0, errReturning
 	}
 
